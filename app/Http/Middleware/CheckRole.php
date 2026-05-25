@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+
+class CheckRole
+{
+    /**
+     * Handle an incoming request.
+     * Usage: ->middleware('role:admin') or ->middleware('role:admin,staff')
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  ...$roles
+     * @return mixed
+     */
+    public function handle($request, Closure $next, ...$roles)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        if (!in_array($user->role, $roles)) {
+            return response()->json([
+                'message' => 'Forbidden. Required role: ' . implode(' or ', $roles),
+            ], 403);
+        }
+
+        return $next($request);
+    }
+}

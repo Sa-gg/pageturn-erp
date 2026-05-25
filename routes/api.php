@@ -13,6 +13,35 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+// Public routes (no auth required)
+Route::post('/auth/register', 'AuthController@register');
+Route::post('/auth/login', 'AuthController@login');
+
+// Token validation (inter-service) - does its own token check
+Route::get('/auth/validate', 'AuthController@validate');
+
+// Protected routes (require valid API token)
+Route::middleware('auth:api')->group(function () {
+    // Auth routes
+    Route::post('/auth/logout', 'AuthController@logout');
+    Route::get('/auth/me', 'AuthController@me');
+    Route::put('/auth/profile', 'AuthController@updateProfile');
+
+    // Admin-only user management
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/users', 'UserController@index');
+        Route::post('/users', 'UserController@store');
+        Route::get('/users/{id}', 'UserController@show');
+        Route::put('/users/{id}', 'UserController@update');
+        Route::delete('/users/{id}', 'UserController@destroy');
+    });
+});
+
+// Health check
+Route::get('/health', function () {
+    return response()->json([
+        'service' => 'pageturn-auth',
+        'status' => 'healthy',
+        'timestamp' => now()->toISOString(),
+    ]);
 });
