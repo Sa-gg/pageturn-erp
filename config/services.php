@@ -44,4 +44,30 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Microservice URLs
+    |--------------------------------------------------------------------------
+    */
+
+    'auth' => [
+        'base_url' => env('AUTH_SERVICE_URL', 'http://localhost:8001/api'),
+    ],
+
+    'catalog' => [
+        'base_url' => env('CATALOG_SERVICE_URL', 'http://localhost:8002/api'),
+    ],
+
+    'orders' => [
+        'base_url' => env('ORDERS_SERVICE_URL', 'http://localhost:8003/api'),
+    ],
+
+    'inventory' => [
+        'base_url' => env('INVENTORY_SERVICE_URL', 'http://localhost:8004/api'),
+    ],
+
+    'finance' => [
+        'base_url' => env('FINANCE_SERVICE_URL', 'http://localhost:8005/api'),
+    ],
+
 ];

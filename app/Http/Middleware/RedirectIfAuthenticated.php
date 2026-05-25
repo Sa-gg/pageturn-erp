@@ -3,12 +3,12 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Auth;
 
 class RedirectIfAuthenticated
 {
     /**
      * Handle an incoming request.
+     * If user has a valid session token, redirect them away from login/register pages.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -17,7 +17,7 @@ class RedirectIfAuthenticated
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if (Auth::guard($guard)->check()) {
+        if ($request->session()->has('api_token') && $request->session()->has('user')) {
             return redirect('/home');
         }
 

@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use App\Services\AuthService;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -12,20 +13,12 @@ class LoginController extends Controller
     | Login Controller
     |--------------------------------------------------------------------------
     |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
+    | This controller handles authenticating users via the Auth microservice
+    | and manages session-based token storage for the frontend.
     |
     */
 
-    use AuthenticatesUsers;
-
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/home';
+    protected $authService;
 
     /**
      * Create a new controller instance.
@@ -34,6 +27,75 @@ class LoginController extends Controller
      */
     public function __construct()
     {
+        $this->authService = new AuthService();
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Show the login form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    /**
+     * Handle a login request via the auth microservice.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email'    => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+
+        $result = $this->authService->login(
+            $request->input('email'),
+            $request->input('password')
+        );
+
+        if (!$result['success']) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => $result['message']]);
+        }
+
+        // Store token and user data in session
+        $request->session()->put('api_token', $result['data']['token']);
+        $request->session()->put('user', $result['data']['user']);
+
+        // Redirect based on role
+        $user = $result['data']['user'];
+        if (in_array($user['role'], ['admin', 'staff'])) {
+            return redirect()->intended('/admin/dashboard');
+        }
+
+        return redirect()->intended('/home');
+    }
+
+    /**
+     * Log the user out via the auth microservice.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function logout(Request $request)
+    {
+        $token = $request->session()->get('api_token');
+
+        if ($token) {
+            $this->authService->logout($token);
+        }
+
+        $request->session()->forget(['api_token', 'user']);
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login')->with('status', 'You have been logged out.');
     }
 }
