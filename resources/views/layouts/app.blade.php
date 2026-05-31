@@ -16,6 +16,26 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('styles')
+    <style>
+        /* Dark mode: modal-box */
+        .dark .modal-box { background: #1e2130 !important; color: #e2e8f0 !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+        .dark .modal-box h3 { color: #f1f5f9 !important; }
+        .dark .modal-box p { color: #94a3b8 !important; }
+        .dark .modal-box button[type="button"] { background: #0f172a !important; color: #94a3b8 !important; border-color: rgba(255,255,255,0.12) !important; }
+        /* Dark mode: ALL inputs/selects/textareas */
+        .dark input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+        .dark select, .dark textarea { background-color: #0f172a !important; color: #e2e8f0 !important; border-color: rgba(255,255,255,0.15) !important; }
+        .dark input::placeholder, .dark textarea::placeholder { color: #64748b !important; }
+        .dark label { color: #cbd5e1 !important; }
+        /* Dark mode: cards */
+        .dark .bg-white { background-color: #1e2130 !important; color: #e2e8f0 !important; }
+        .dark .bg-gray-50 { background-color: #141824 !important; }
+        .dark .text-gray-700 { color: #cbd5e1 !important; }
+        .dark .text-gray-800 { color: #e2e8f0 !important; }
+        .dark .text-gray-900 { color: #f1f5f9 !important; }
+        .dark .border-gray-200 { border-color: rgba(255,255,255,0.08) !important; }
+        .dark .brand-wordmark { color: #f1f5f9 !important; }
+    </style>
     
     <script>
         // Apply dark mode theme immediately to avoid flash of light screen
@@ -240,3 +260,4 @@
     @yield('scripts')
 </body>
 </html>
+

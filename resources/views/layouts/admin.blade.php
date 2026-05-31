@@ -18,51 +18,83 @@
     @yield('styles')
 
     <style>
-        /* Centralized fallback styles for legacy inline admin modals. */
-        [id$="Modal"] {
-            backdrop-filter: blur(2px);
-        }
-
-        [id$="Modal"] > div {
-            color: var(--color-gray-800);
-        }
-
-        .dark [id$="Modal"] {
-            background: rgba(0, 0, 0, 0.7) !important;
-        }
-
+        /* ── Dark mode: modals ending with "Modal" ── */
+        [id$="Modal"] { backdrop-filter: blur(2px); }
+        [id$="Modal"] > div { color: var(--color-gray-800); }
+        .dark [id$="Modal"] { background: rgba(0,0,0,0.72) !important; }
         .dark [id$="Modal"] > div {
-            background: var(--color-white) !important;
-            color: var(--color-gray-800) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
+            background: #1e2130 !important;
+            color: #e2e8f0 !important;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 22px 50px rgba(0,0,0,0.5);
         }
-
         .dark [id$="Modal"] h2,
         .dark [id$="Modal"] h3,
-        .dark [id$="Modal"] label,
-        .dark [id$="Modal"] p {
-            color: var(--color-gray-700) !important;
-        }
-
+        .dark [id$="Modal"] label { color: #e2e8f0 !important; }
+        .dark [id$="Modal"] p { color: #94a3b8 !important; }
         .dark [id$="Modal"] input:not([type="hidden"]),
         .dark [id$="Modal"] select,
         .dark [id$="Modal"] textarea {
-            background: var(--color-gray-100) !important;
-            color: var(--color-gray-800) !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
+            background: #0f172a !important;
+            color: #e2e8f0 !important;
+            border-color: rgba(255,255,255,0.12) !important;
         }
-
         .dark [id$="Modal"] input::placeholder,
-        .dark [id$="Modal"] textarea::placeholder {
-            color: var(--color-gray-500);
+        .dark [id$="Modal"] textarea::placeholder { color: #64748b; }
+        .dark [id$="Modal"] button[type="button"] {
+            background: #1e2130 !important;
+            color: #94a3b8 !important;
+            border-color: rgba(255,255,255,0.15) !important;
         }
 
-        .dark [id$="Modal"] button[type="button"] {
-            background: var(--color-gray-100) !important;
-            color: var(--color-gray-700) !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
+        /* ── Dark mode: ALL page inputs / selects / textareas ── */
+        .dark input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+        .dark select,
+        .dark textarea {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+            border-color: rgba(255,255,255,0.12) !important;
         }
+        .dark input::placeholder,
+        .dark textarea::placeholder { color: #64748b !important; }
+        .dark label { color: #cbd5e1 !important; }
+
+        /* ── Dark mode: table rows / cards ── */
+        .dark table { color: #e2e8f0 !important; }
+        .dark thead th { color: #94a3b8 !important; background: #1e293b !important; }
+        .dark tbody tr { border-color: rgba(255,255,255,0.06) !important; }
+        .dark tbody tr:hover { background: rgba(255,255,255,0.03) !important; }
+        .dark td, .dark th { color: #e2e8f0 !important; }
+
+        /* ── Dark mode: white cards / boxes ── */
+        .dark .bg-white { background-color: #1e2130 !important; color: #e2e8f0 !important; }
+        .dark .bg-gray-50 { background-color: #141824 !important; }
+        .dark .border-gray-200 { border-color: rgba(255,255,255,0.08) !important; }
+        .dark .text-gray-700 { color: #cbd5e1 !important; }
+        .dark .text-gray-800 { color: #e2e8f0 !important; }
+        .dark .text-gray-900 { color: #f1f5f9 !important; }
+
+        /* ── Dark mode: modal-box (global confirm modal) ── */
+        .dark .modal-box {
+            background: #1e2130 !important;
+            color: #e2e8f0 !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+        }
+        .dark .modal-box h3 { color: #f1f5f9 !important; }
+        .dark .modal-box p { color: #94a3b8 !important; }
+        .dark .modal-box button[type="button"] {
+            background: #0f172a !important;
+            color: #94a3b8 !important;
+            border-color: rgba(255,255,255,0.12) !important;
+        }
+
+        /* ── Dark mode: logo wordmark always visible ── */
+        .dark .brand-wordmark { color: #f1f5f9 !important; }
+
+        /* ── Dark mode: status badges ── */
+        .dark .badge-success, .dark [class*="text-green"] { color: #4ade80 !important; }
+        .dark .badge-danger,  .dark [class*="text-red"]   { color: #f87171 !important; }
+        .dark .badge-warning, .dark [class*="text-yellow"]{ color: #fbbf24 !important; }
     </style>
     
     <script>
