@@ -11,15 +11,20 @@ Route::get('/health', function () {
     return response()->json(['status' => 'ok', 'service' => 'finance']);
 });
 
-Route::post('/invoices', [InvoiceController::class, 'store']);
-Route::get('/invoices', [InvoiceController::class, 'index']);
-Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
-Route::patch('/invoices/{id}/pay', [InvoiceController::class, 'pay']);
+Route::middleware(['role:finance_admin,allow_internal'])->group(function () {
+    Route::post('/invoices', [InvoiceController::class, 'store']);
+});
 
-Route::get('/payments', [PaymentController::class, 'index']);
+Route::middleware(['role:finance_admin'])->group(function () {
+    Route::get('/invoices', [InvoiceController::class, 'index']);
+    Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
+    Route::patch('/invoices/{id}/pay', [InvoiceController::class, 'pay']);
 
-Route::apiResource('expenses', ExpenseController::class);
+    Route::get('/payments', [PaymentController::class, 'index']);
 
-Route::get('/reports/revenue', [ReportController::class, 'revenue']);
-Route::get('/reports/profit', [ReportController::class, 'profit']);
-Route::get('/reports/top-books', [ReportController::class, 'topBooks']);
+    Route::apiResource('expenses', ExpenseController::class);
+
+    Route::get('/reports/revenue', [ReportController::class, 'revenue']);
+    Route::get('/reports/profit', [ReportController::class, 'profit']);
+    Route::get('/reports/top-books', [ReportController::class, 'topBooks']);
+});

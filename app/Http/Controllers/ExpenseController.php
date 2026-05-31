@@ -12,14 +12,14 @@ class ExpenseController extends Controller
         $query = Expense::query();
         
         if ($request->has('category')) {
-            $query->where('category', $request->category);
+            $query->where('category', $request->input('category'));
         }
         
         if ($request->has('from_date')) {
-            $query->where('expense_date', '>=', $request->from_date);
+            $query->where('expense_date', '>=', $request->input('from_date'));
         }
         if ($request->has('to_date')) {
-            $query->where('expense_date', '<=', $request->to_date);
+            $query->where('expense_date', '<=', $request->input('to_date'));
         }
 
         $expenses = $query->orderBy('expense_date', 'desc')->paginate($request->get('per_page', 15));
@@ -29,14 +29,14 @@ class ExpenseController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'category'     => 'required|string',
             'amount'       => 'required|numeric',
             'description'  => 'nullable|string',
             'expense_date' => 'required|date',
         ]);
 
-        $expense = Expense::create($request->all());
+        $expense = Expense::create($validated);
 
         return response()->json([
             'message' => 'Expense recorded successfully',
@@ -54,14 +54,14 @@ class ExpenseController extends Controller
     {
         $expense = Expense::findOrFail($id);
         
-        $request->validate([
+        $validated = $request->validate([
             'category'     => 'sometimes|required|string',
             'amount'       => 'sometimes|required|numeric',
             'description'  => 'nullable|string',
             'expense_date' => 'sometimes|required|date',
         ]);
 
-        $expense->update($request->all());
+        $expense->update($validated);
 
         return response()->json([
             'message' => 'Expense updated successfully',
