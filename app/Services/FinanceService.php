@@ -31,13 +31,21 @@ class FinanceService
                 'subtotal'       => $orderData['subtotal'],
                 'shipping_fee'   => $orderData['shipping_fee'],
                 'tax'            => $orderData['tax'],
-                'discount'       => $orderData['discount'],
+                'discount'       => $orderData['discount'] ?? 0,
                 'total'          => $orderData['total'],
                 'items'          => $orderData['items'] ?? [],
             ];
 
-            $response = Http::timeout(15)
-                ->post("{$this->baseUrl}/invoices", $payload);
+            $internalToken = env('INTERNAL_SERVICE_TOKEN');
+
+            $httpClient = Http::timeout(15);
+            if (!empty($internalToken)) {
+                $httpClient = $httpClient->withHeaders([
+                    'X-Internal-Token' => $internalToken,
+                ]);
+            }
+
+            $response = $httpClient->post("{$this->baseUrl}/invoices", $payload);
 
             if ($response->successful()) {
                 Log::info("FinanceService: Invoice created for order {$orderData['order_number']}");

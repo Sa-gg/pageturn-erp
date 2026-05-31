@@ -100,7 +100,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id'          => 'required|integer',
+            'user_id'          => 'nullable|integer',
             'customer_name'    => 'required|string|max:255',
             'customer_email'   => 'required|email|max:255',
             'customer_phone'   => 'nullable|string|max:20',
@@ -109,12 +109,25 @@ class OrderController extends Controller
             'shipping_state'   => 'nullable|string|max:100',
             'shipping_zip'     => 'required|string|max:20',
             'shipping_country' => 'sometimes|string|max:5',
-            'payment_method'   => 'sometimes|in:cod,card,gcash',
+            'payment_method'   => 'sometimes|in:cod,card,gcash,paypal',
             'notes'            => 'nullable|string|max:1000',
+            'items'            => 'sometimes|array',
+            'items.*.book_id'  => 'required_with:items|integer',
+            'items.*.quantity' => 'required_with:items|integer|min:1',
         ]);
 
-        // Get cart items for this user
-        $cartItems = CartItem::where('user_id', $request->user_id)->get();
+        // If items are provided in the payload, use them. Otherwise, fetch from cart_items table.
+        if ($request->has('items') && count($request->items) > 0) {
+            $cartItems = collect($request->items)->map(function ($item) use ($request) {
+                return (object)[
+                    'book_id' => $item['book_id'],
+                    'quantity' => $item['quantity'],
+                    'user_id' => $request->user_id ?? 1,
+                ];
+            });
+        } else {
+            $cartItems = CartItem::where('user_id', $request->user_id)->get();
+        }
 
         if ($cartItems->isEmpty()) {
             return response()->json(['message' => 'Cart is empty'], 422);
@@ -152,7 +165,7 @@ class OrderController extends Controller
         // Create order in a transaction
         $order = DB::transaction(function () use ($request, $validatedItems, $subtotal, $shippingFee, $tax, $total) {
             $order = Order::create([
-                'user_id'          => $request->user_id,
+                'user_id'          => $request->user_id ?? 1,
                 'customer_name'    => $request->customer_name,
                 'customer_email'   => $request->customer_email,
                 'customer_phone'   => $request->customer_phone,
@@ -166,6 +179,7 @@ class OrderController extends Controller
                 'subtotal'         => $subtotal,
                 'shipping_fee'     => $shippingFee,
                 'tax'              => $tax,
+                'discount'         => 0,
                 'total'            => $total,
                 'status'           => 'pending',
                 'payment_status'   => 'unpaid',
@@ -175,9 +189,6 @@ class OrderController extends Controller
             foreach ($validatedItems as $item) {
                 OrderItem::create(array_merge($item, ['order_id' => $order->id]));
             }
-
-            // Clear the user's cart
-            CartItem::where('user_id', $order->user_id)->delete();
 
             return $order;
         });
@@ -194,13 +205,30 @@ class OrderController extends Controller
         $stockResult = $this->inventoryService->deductStock($stockItems, $order->order_number);
         if (!$stockResult['success']) {
             Log::warning("Order {$order->order_number}: Stock deduction failed — {$stockResult['error']}");
+            OrderItem::where('order_id', $order->id)->delete();
+            $order->delete();
+
+            return response()->json([
+                'message' => 'Unable to complete checkout: insufficient stock',
+                'error' => $stockResult['error'],
+            ], 422);
         }
 
         // 2) Create invoice via Finance service
         $invoiceResult = $this->financeService->createInvoice($order->toArray());
         if (!$invoiceResult['success']) {
             Log::warning("Order {$order->order_number}: Invoice creation failed — {$invoiceResult['error']}");
+            OrderItem::where('order_id', $order->id)->delete();
+            $order->delete();
+
+            return response()->json([
+                'message' => 'Unable to complete checkout: invoice creation failed',
+                'error' => $invoiceResult['error'],
+            ], 502);
         }
+
+        // Clear cart only after all inter-service operations have succeeded.
+        CartItem::where('user_id', $order->user_id)->delete();
 
         return response()->json([
             'message' => 'Order placed successfully',
@@ -222,13 +250,18 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
-        // Prevent invalid transitions
-        $invalidTransitions = [
-            'delivered'  => ['pending', 'confirmed', 'processing'],
-            'cancelled'  => ['shipped', 'delivered'],
+        // Enforce a strict workflow to reject skipped or reversed transitions.
+        $allowedTransitions = [
+            'pending' => ['confirmed', 'cancelled'],
+            'confirmed' => ['processing', 'cancelled'],
+            'processing' => ['shipped', 'cancelled'],
+            'shipped' => ['delivered'],
+            'delivered' => ['refunded'],
+            'cancelled' => [],
+            'refunded' => [],
         ];
 
-        if (isset($invalidTransitions[$oldStatus]) && in_array($newStatus, $invalidTransitions[$oldStatus])) {
+        if ($newStatus !== $oldStatus && !in_array($newStatus, $allowedTransitions[$oldStatus] ?? [], true)) {
             return response()->json([
                 'message' => "Cannot change status from '{$oldStatus}' to '{$newStatus}'",
             ], 422);
