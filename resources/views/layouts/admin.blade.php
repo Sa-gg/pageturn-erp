@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin Dashboard | PageTurn Books</title>
     
     <!-- Google Fonts -->
@@ -15,6 +16,54 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('styles')
+
+    <style>
+        /* Centralized fallback styles for legacy inline admin modals. */
+        [id$="Modal"] {
+            backdrop-filter: blur(2px);
+        }
+
+        [id$="Modal"] > div {
+            color: var(--color-gray-800);
+        }
+
+        .dark [id$="Modal"] {
+            background: rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .dark [id$="Modal"] > div {
+            background: var(--color-white) !important;
+            color: var(--color-gray-800) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
+        }
+
+        .dark [id$="Modal"] h2,
+        .dark [id$="Modal"] h3,
+        .dark [id$="Modal"] label,
+        .dark [id$="Modal"] p {
+            color: var(--color-gray-700) !important;
+        }
+
+        .dark [id$="Modal"] input:not([type="hidden"]),
+        .dark [id$="Modal"] select,
+        .dark [id$="Modal"] textarea {
+            background: var(--color-gray-100) !important;
+            color: var(--color-gray-800) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .dark [id$="Modal"] input::placeholder,
+        .dark [id$="Modal"] textarea::placeholder {
+            color: var(--color-gray-500);
+        }
+
+        .dark [id$="Modal"] button[type="button"] {
+            background: var(--color-gray-100) !important;
+            color: var(--color-gray-700) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+    </style>
     
     <script>
         // Apply dark mode theme immediately to avoid flash of light screen
@@ -29,10 +78,7 @@
 
     <!-- Mobile Hamburger Header -->
     <header class="bg-white border-b border-gray-200 h-16 flex md:hidden items-center justify-between px-6 transition-colors duration-300 dark:bg-gray-800 dark:border-gray-700">
-        <a href="/admin/dashboard" class="flex items-center gap-2">
-            <svg class="w-6 h-6 text-brand-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-            <span class="font-bold text-lg text-brand-brown dark:text-brand-gold">Admin Panel</span>
-        </a>
+        @include('partials.brand-logo', ['href' => '/admin/dashboard', 'subline' => 'Admin Console', 'class' => 'scale-90 origin-left', 'variant' => 'light'])
         <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-brand-forest p-2 rounded-md focus:outline-none dark:text-gray-300">
             <i class="fas fa-bars text-xl"></i>
         </button>
@@ -42,10 +88,7 @@
     <aside id="admin-sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col fixed md:sticky top-0 h-screen z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out dark:bg-gray-850 dark:border-gray-700 dark:bg-gray-800">
         <!-- Sidebar Header -->
         <div class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
-            <a href="/admin/dashboard" class="flex items-center gap-2">
-                <svg class="w-6 h-6 text-brand-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span class="font-bold text-lg text-brand-brown dark:text-brand-gold">Admin Panel</span>
-            </a>
+            @include('partials.brand-logo', ['href' => '/admin/dashboard', 'subline' => 'Admin Console', 'class' => 'scale-90 origin-left', 'variant' => 'light'])
             <button onclick="toggleMobileMenu()" class="md:hidden text-gray-500 hover:text-brand-forest focus:outline-none dark:text-gray-300">
                 <i class="fas fa-times text-xl"></i>
             </button>
@@ -54,12 +97,16 @@
         <!-- Sidebar Navigation -->
         <div class="flex-grow overflow-y-auto py-4">
             <nav class="space-y-1 px-3">
-                @php $route = request()->getPathInfo(); @endphp
+                @php 
+                    $route = request()->getPathInfo(); 
+                    $userRole = data_get(session('user'), 'role', '');
+                @endphp
                 <a href="/admin/dashboard" class="{{ $route == '/admin/dashboard' ? 'bg-gray-100 text-brand-forest dark:bg-gray-700 dark:text-brand-gold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900' }} group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150">
                     <i class="fas fa-chart-line mr-3 text-lg w-5 text-center"></i>
                     Dashboard
                 </a>
                 
+                @if(in_array($userRole, ['super_admin', 'catalog_admin', 'admin', 'staff']))
                 <p class="px-3 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Book Catalog</p>
                 <a href="/admin/books" class="{{ str_starts_with($route, '/admin/books') ? 'bg-gray-100 text-brand-forest dark:bg-gray-700 dark:text-brand-gold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900' }} group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150">
                     <i class="fas fa-book mr-3 text-lg w-5 text-center"></i>
@@ -73,13 +120,17 @@
                     <i class="fas fa-tags mr-3 text-lg w-5 text-center"></i>
                     Categories
                 </a>
+                @endif
                 
+                @if(in_array($userRole, ['super_admin', 'orders_admin', 'admin', 'staff']))
                 <p class="px-3 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Order Management</p>
                 <a href="/admin/orders" class="{{ str_starts_with($route, '/admin/orders') ? 'bg-gray-100 text-brand-forest dark:bg-gray-700 dark:text-brand-gold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900' }} group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150">
                     <i class="fas fa-shopping-bag mr-3 text-lg w-5 text-center"></i>
                     Orders
                 </a>
+                @endif
 
+                @if(in_array($userRole, ['super_admin', 'inventory_admin', 'admin', 'staff']))
                 <p class="px-3 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Stock & Supply</p>
                 <a href="/admin/inventory" class="{{ str_starts_with($route, '/admin/inventory') ? 'bg-gray-100 text-brand-forest dark:bg-gray-700 dark:text-brand-gold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900' }} group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150">
                     <i class="fas fa-boxes mr-3 text-lg w-5 text-center"></i>
@@ -93,7 +144,9 @@
                     <i class="fas fa-file-invoice mr-3 text-lg w-5 text-center"></i>
                     Purchase Orders
                 </a>
+                @endif
                 
+                @if(in_array($userRole, ['super_admin', 'finance_admin', 'admin']))
                 <p class="px-3 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Finance & Admin</p>
                 <a href="/admin/invoices" class="{{ str_starts_with($route, '/admin/invoices') ? 'bg-gray-100 text-brand-forest dark:bg-gray-700 dark:text-brand-gold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900' }} group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150">
                     <i class="fas fa-file-invoice-dollar mr-3 text-lg w-5 text-center"></i>
@@ -107,10 +160,14 @@
                     <i class="fas fa-poll mr-3 text-lg w-5 text-center"></i>
                     Reports
                 </a>
-                <a href="/admin/users" class="{{ str_starts_with($route, '/admin/users') ? 'bg-gray-100 text-brand-forest dark:bg-gray-700 dark:text-brand-gold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900' }} group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150">
+                @endif
+
+                @if(in_array($userRole, ['super_admin', 'admin']))
+                <a href="/admin/users" class="{{ str_starts_with($route, '/admin/users') ? 'bg-gray-100 text-brand-forest dark:bg-gray-700 dark:text-brand-gold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900' }} group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 mt-4">
                     <i class="fas fa-users mr-3 text-lg w-5 text-center"></i>
                     Users
                 </a>
+                @endif
             </nav>
         </div>
     </aside>

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-    protected $authService;
+    protected AuthService $authService;
 
     public function __construct(AuthService $authService)
     {
@@ -32,8 +32,21 @@ class AuthController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
+                if (!is_array($data) || !isset($data['user'], $data['token']) || !is_array($data['user'])) {
+                    return back()->with('error', 'Authentication service returned an unexpected response.');
+                }
+
+                $user = $data['user'];
+                $user['api_token'] = $data['token'];
                 session()->put('token', $data['token']);
-                session()->put('user', $data['user']);
+                session()->put('api_token', $data['token']);
+                session()->put('user', $user);
+
+                $adminRoles = ['admin', 'super_admin', 'catalog_admin', 'orders_admin', 'inventory_admin', 'finance_admin', 'staff'];
+                if (in_array($user['role'] ?? '', $adminRoles, true)) {
+                    return redirect('/admin/dashboard')->with('success', 'Logged in successfully!');
+                }
+
                 return redirect('/')->with('success', 'Logged in successfully!');
             }
 
@@ -62,8 +75,15 @@ class AuthController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
+                if (!is_array($data) || !isset($data['user'], $data['token']) || !is_array($data['user'])) {
+                    return back()->with('error', 'Authentication service returned an unexpected response.');
+                }
+
+                $user = $data['user'];
+                $user['api_token'] = $data['token'];
                 session()->put('token', $data['token']);
-                session()->put('user', $data['user']);
+                session()->put('api_token', $data['token']);
+                session()->put('user', $user);
                 return redirect('/')->with('success', 'Account created successfully!');
             }
 
@@ -76,7 +96,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        session()->forget(['token', 'user', 'cart']);
+        session()->forget(['token', 'api_token', 'user', 'cart']);
         return redirect('/')->with('success', 'Logged out successfully.');
     }
 }
