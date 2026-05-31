@@ -201,9 +201,17 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{{ $book['author']['name'] ?? 'Unknown' }}</p>
                                 <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5">
                                     <span class="font-bold text-gray-900 dark:text-white text-sm">${{ number_format($book['price'] ?? 0, 2) }}</span>
-                                    <a href="/catalog/{{ $book['id'] }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-brand-gold/10 hover:bg-brand-gold text-brand-gold hover:text-brand-ink transition-all duration-200" title="View & Add to Cart">
-                                        <i class="fas fa-shopping-bag text-xs"></i>
-                                    </a>
+                                    <form action="/cart/add" method="POST" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="book_id" value="{{ $book['id'] }}">
+                                        <input type="hidden" name="title" value="{{ $book['title'] }}">
+                                        <input type="hidden" name="price" value="{{ $book['price'] ?? 0 }}">
+                                        <input type="hidden" name="cover_image" value="{{ $coverUrl }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-brand-gold/10 hover:bg-brand-gold text-brand-gold hover:text-brand-ink transition-all duration-200" title="Add to Cart">
+                                            <i class="fas fa-plus text-xs"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
