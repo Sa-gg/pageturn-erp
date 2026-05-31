@@ -13,13 +13,57 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // Create default admin user
+        // Create super admin
         \App\User::updateOrCreate(
             ['email' => 'admin@pageturn.com'],
             [
-                'name' => 'Admin',
+                'name' => 'Super Admin',
                 'password' => Hash::make('password123'),
-                'role' => 'admin',
+                'role' => 'super_admin',
+                'is_active' => true,
+            ]
+        );
+
+        // Create Finance Admin
+        \App\User::updateOrCreate(
+            ['email' => 'finance@pageturn.com'],
+            [
+                'name' => 'Finance Admin',
+                'password' => Hash::make('password123'),
+                'role' => 'finance_admin',
+                'is_active' => true,
+            ]
+        );
+
+        // Create Inventory Admin
+        \App\User::updateOrCreate(
+            ['email' => 'inventory@pageturn.com'],
+            [
+                'name' => 'Inventory Admin',
+                'password' => Hash::make('password123'),
+                'role' => 'inventory_admin',
+                'is_active' => true,
+            ]
+        );
+
+        // Create Catalog Admin
+        \App\User::updateOrCreate(
+            ['email' => 'catalog@pageturn.com'],
+            [
+                'name' => 'Catalog Admin',
+                'password' => Hash::make('password123'),
+                'role' => 'catalog_admin',
+                'is_active' => true,
+            ]
+        );
+
+        // Create Orders Admin
+        \App\User::updateOrCreate(
+            ['email' => 'orders@pageturn.com'],
+            [
+                'name' => 'Orders Admin',
+                'password' => Hash::make('password123'),
+                'role' => 'orders_admin',
                 'is_active' => true,
             ]
         );

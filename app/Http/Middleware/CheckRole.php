@@ -23,7 +23,7 @@ class CheckRole
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        if (!in_array($user->role, $roles)) {
+        if (!in_array($user->role, $roles) && $user->role !== 'super_admin') {
             return response()->json([
                 'message' => 'Forbidden. Required role: ' . implode(' or ', $roles),
             ], 403);

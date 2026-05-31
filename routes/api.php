@@ -18,7 +18,7 @@ Route::post('/auth/register', 'AuthController@register');
 Route::post('/auth/login', 'AuthController@login');
 
 // Token validation (inter-service) - does its own token check
-Route::get('/auth/validate', 'AuthController@validate');
+Route::get('/auth/validate', 'AuthController@validateToken');
 
 // Protected routes (require valid API token)
 Route::middleware('auth:api')->group(function () {

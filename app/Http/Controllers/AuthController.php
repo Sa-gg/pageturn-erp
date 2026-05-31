@@ -129,7 +129,7 @@ class AuthController extends Controller
      * Validate token (inter-service call).
      * Used by other microservices to validate a user's token.
      */
-    public function validate(Request $request)
+    public function validateToken(Request $request)
     {
         $token = $request->bearerToken();
 
@@ -137,9 +137,13 @@ class AuthController extends Controller
             return response()->json(['valid' => false, 'message' => 'No token provided'], 401);
         }
 
-        $user = User::where('api_token', hash('sha256', $token))->first();
+        $hashedToken = hash('sha256', $token);
+        \Log::info("Validating token. Original: " . substr($token, 0, 10) . "... Hashed: " . $hashedToken);
+        
+        $user = User::where('api_token', $hashedToken)->first();
 
         if (!$user || !$user->is_active) {
+            \Log::warning("User not found for hashed token: " . $hashedToken);
             return response()->json(['valid' => false, 'message' => 'Invalid or expired token'], 401);
         }
 
