@@ -18,7 +18,7 @@ class InventoryService
     protected function client(): PendingRequest
     {
         $token = $this->token();
-        return $token ? Http::withToken($token) : Http::acceptJson();
+        return $token ? Http::withToken($token)->acceptJson() : Http::acceptJson();
     }
 
     public function __construct()
