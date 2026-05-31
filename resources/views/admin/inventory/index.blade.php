@@ -102,7 +102,12 @@
         </div>
     @endif
 
-    @if(!empty($alerts))
+    @php
+        $alertItems = $alerts['data'] ?? $alerts;
+        $inventoryItems = $inventory['data'] ?? $inventory;
+    @endphp
+
+    @if(!empty($alertItems))
     <div class="admin-card" style="border-left: 4px solid #ffc107;">
         <div style="padding:16px; background:#fff3cd; color:#856404; font-weight:bold;">
             <i class="fas fa-exclamation-triangle"></i> Low Stock Alerts
@@ -117,15 +122,17 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($alerts as $alert)
+                @foreach($alertItems as $alert)
+                @if(is_array($alert))
                 <tr>
-                    <td>{{ $alert['book_title'] }}</td>
-                    <td style="color:#dc3545; font-weight:bold;">{{ $alert['quantity_on_hand'] }}</td>
-                    <td>{{ $alert['reorder_level'] }}</td>
+                    <td>{{ $alert['book_title'] ?? 'Unknown' }}</td>
+                    <td style="color:#dc3545; font-weight:bold;">{{ $alert['quantity_on_hand'] ?? 0 }}</td>
+                    <td>{{ $alert['reorder_level'] ?? 0 }}</td>
                     <td>
                         <button class="btn-adjust" onclick="openAdjustModal({{ json_encode($alert) }})">Adjust Stock</button>
                     </td>
                 </tr>
+                @endif
                 @endforeach
             </tbody>
         </table>
@@ -144,24 +151,26 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($inventory['data'] ?? $inventory as $item)
+                @forelse($inventoryItems as $item)
+                @if(is_array($item))
                 <tr>
-                    <td><strong>{{ $item['book_title'] }}</strong></td>
+                    <td><strong>{{ $item['book_title'] ?? 'Unknown' }}</strong></td>
                     <td>{{ $item['location'] ?? 'Unassigned' }}</td>
                     <td>
-                        @if($item['quantity_on_hand'] == 0)
+                        @if(($item['quantity_on_hand'] ?? 0) == 0)
                             <span class="status-indicator status-out"></span> <span style="color:#dc3545; font-weight:bold;">Out of Stock</span>
-                        @elseif($item['quantity_on_hand'] <= $item['reorder_level'])
-                            <span class="status-indicator status-low"></span> <span style="color:#ffc107; font-weight:bold;">Low Stock ({{ $item['quantity_on_hand'] }})</span>
+                        @elseif(($item['quantity_on_hand'] ?? 0) <= ($item['reorder_level'] ?? 0))
+                            <span class="status-indicator status-low"></span> <span style="color:#ffc107; font-weight:bold;">Low Stock ({{ $item['quantity_on_hand'] ?? 0 }})</span>
                         @else
-                            <span class="status-indicator status-good"></span> {{ $item['quantity_on_hand'] }}
+                            <span class="status-indicator status-good"></span> {{ $item['quantity_on_hand'] ?? 0 }}
                         @endif
                     </td>
-                    <td>{{ $item['reorder_level'] }}</td>
+                    <td>{{ $item['reorder_level'] ?? 0 }}</td>
                     <td>
                         <button class="btn-adjust" onclick="openAdjustModal({{ json_encode($item) }})">Adjust</button>
                     </td>
                 </tr>
+                @endif
                 @empty
                 <tr>
                     <td colspan="5" style="text-align:center; padding:30px;">No inventory items found.</td>
@@ -211,9 +220,9 @@
 
 <script>
 function openAdjustModal(item) {
-    document.getElementById('adjustBookTitle').innerText = item.book_title;
-    document.getElementById('adjustItemId').value = item.id;
-    document.getElementById('adjustBookId').value = item.book_id;
+    document.getElementById('adjustBookTitle').innerText = item.book_title || 'Unknown';
+    document.getElementById('adjustItemId').value = item.id || '';
+    document.getElementById('adjustBookId').value = item.book_id || '';
     document.getElementById('adjustModal').style.display = 'flex';
 }
 

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class CatalogController extends Controller
 {
-    protected $catalogService;
+    protected CatalogService $catalogService;
 
     public function __construct(CatalogService $catalogService)
     {
@@ -18,8 +18,6 @@ class CatalogController extends Controller
     public function index(Request $request)
     {
         $books = [];
-        $categories = [];
-        $authors = [];
         
         $params = $request->only(['category_id', 'author_id', 'search', 'page']);
         
@@ -41,7 +39,11 @@ class CatalogController extends Controller
         try {
             $response = $this->catalogService->getBook($id);
             if ($response->successful()) {
-                $book = $response->json('data');
+                $book = $response->json('data') ?? $response->json('book') ?? $response->json();
+
+                if (empty($book) || !is_array($book)) {
+                    abort(404, 'Book not found');
+                }
             } else {
                 abort(404, 'Book not found');
             }

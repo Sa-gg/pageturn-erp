@@ -2,11 +2,24 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
 class CatalogService
 {
-    protected $baseUrl;
+    protected string $baseUrl;
+
+    protected function token(): ?string
+    {
+        $token = session('user.api_token') ?? session('token') ?? session('api_token');
+        return is_string($token) ? $token : null;
+    }
+
+    protected function client(): PendingRequest
+    {
+        $token = $this->token();
+        return $token ? Http::withToken($token) : Http::acceptJson();
+    }
 
     public function __construct()
     {
@@ -35,55 +48,46 @@ class CatalogService
 
     public function createAuthor($data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->post("{$this->baseUrl}/admin/authors", $data);
+        return $this->client()->post("{$this->baseUrl}/admin/authors", $data);
     }
 
     public function updateAuthor($id, $data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->put("{$this->baseUrl}/admin/authors/{$id}", $data);
+        return $this->client()->put("{$this->baseUrl}/admin/authors/{$id}", $data);
     }
 
     public function deleteAuthor($id)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->delete("{$this->baseUrl}/admin/authors/{$id}");
+        return $this->client()->delete("{$this->baseUrl}/admin/authors/{$id}");
     }
 
     public function createCategory($data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->post("{$this->baseUrl}/admin/categories", $data);
+        return $this->client()->post("{$this->baseUrl}/admin/categories", $data);
     }
 
     public function updateCategory($id, $data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->put("{$this->baseUrl}/admin/categories/{$id}", $data);
+        return $this->client()->put("{$this->baseUrl}/admin/categories/{$id}", $data);
     }
 
     public function deleteCategory($id)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->delete("{$this->baseUrl}/admin/categories/{$id}");
+        return $this->client()->delete("{$this->baseUrl}/admin/categories/{$id}");
     }
 
     public function createBook($data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->post("{$this->baseUrl}/admin/books", $data);
+        return $this->client()->post("{$this->baseUrl}/admin/books", $data);
     }
 
     public function updateBook($id, $data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->put("{$this->baseUrl}/admin/books/{$id}", $data);
+        return $this->client()->put("{$this->baseUrl}/admin/books/{$id}", $data);
     }
 
     public function deleteBook($id)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->delete("{$this->baseUrl}/admin/books/{$id}");
+        return $this->client()->delete("{$this->baseUrl}/admin/books/{$id}");
     }
 }

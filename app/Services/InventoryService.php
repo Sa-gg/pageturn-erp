@@ -2,11 +2,24 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
 class InventoryService
 {
-    protected $baseUrl;
+    protected string $baseUrl;
+
+    protected function token(): ?string
+    {
+        $token = session('user.api_token') ?? session('token') ?? session('api_token');
+        return is_string($token) ? $token : null;
+    }
+
+    protected function client(): PendingRequest
+    {
+        $token = $this->token();
+        return $token ? Http::withToken($token) : Http::acceptJson();
+    }
 
     public function __construct()
     {
@@ -15,67 +28,56 @@ class InventoryService
 
     public function getInventory($params = [])
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/inventory", $params);
+        return $this->client()->get("{$this->baseUrl}/inventory", $params);
     }
 
     public function getAlerts()
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/inventory/alerts");
+        return $this->client()->get("{$this->baseUrl}/inventory/alerts");
     }
 
     public function adjustStock($data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->post("{$this->baseUrl}/stock/adjust", $data);
+        return $this->client()->post("{$this->baseUrl}/stock/adjust", $data);
     }
 
     public function getSuppliers($params = [])
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/suppliers", $params);
+        return $this->client()->get("{$this->baseUrl}/suppliers", $params);
     }
 
     public function createSupplier($data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->post("{$this->baseUrl}/suppliers", $data);
+        return $this->client()->post("{$this->baseUrl}/suppliers", $data);
     }
 
     public function updateSupplier($id, $data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->put("{$this->baseUrl}/suppliers/{$id}", $data);
+        return $this->client()->put("{$this->baseUrl}/suppliers/{$id}", $data);
     }
 
     public function deleteSupplier($id)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->delete("{$this->baseUrl}/suppliers/{$id}");
+        return $this->client()->delete("{$this->baseUrl}/suppliers/{$id}");
     }
 
     public function getPurchaseOrders($params = [])
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/purchase-orders", $params);
+        return $this->client()->get("{$this->baseUrl}/purchase-orders", $params);
     }
 
     public function getPurchaseOrder($id)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/purchase-orders/{$id}");
+        return $this->client()->get("{$this->baseUrl}/purchase-orders/{$id}");
     }
 
     public function createPurchaseOrder($data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->post("{$this->baseUrl}/purchase-orders", $data);
+        return $this->client()->post("{$this->baseUrl}/purchase-orders", $data);
     }
 
     public function receivePurchaseOrder($id, $data = [])
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->patch("{$this->baseUrl}/purchase-orders/{$id}/receive", $data);
+        return $this->client()->patch("{$this->baseUrl}/purchase-orders/{$id}/receive", $data);
     }
 }

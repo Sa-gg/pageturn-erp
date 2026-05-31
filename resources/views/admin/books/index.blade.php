@@ -122,23 +122,38 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($books['data'] ?? $books as $book)
+                @php
+                    $bookItems = $books['data'] ?? $books;
+                    $authorItems = $authors['data'] ?? $authors;
+                    $categoryItems = $categories['categories'] ?? $categories['data'] ?? $categories;
+                @endphp
+                @forelse($bookItems as $book)
+                @php
+                    $bookId = data_get($book, 'id');
+                    $bookAuthorId = data_get($book, 'author_id');
+                    $bookCategoryId = data_get($book, 'category_id');
+                    $bookTitle = data_get($book, 'title', 'Untitled');
+                    $bookIsbn = data_get($book, 'isbn', 'N/A');
+                    $bookPrice = data_get($book, 'price', 0);
+                @endphp
                 <tr>
                     <td>
-                        <img src="{{ $book['cover_image_url'] ?? 'https://via.placeholder.com/50x70?text=No+Cover' }}" alt="Cover" width="50" style="border-radius:4px;">
+                        <img src="{{ data_get($book, 'cover_image_url', 'https://via.placeholder.com/50x70?text=No+Cover') }}" alt="Cover" width="50" style="border-radius:4px;">
                     </td>
-                    <td><strong>{{ $book['title'] }}</strong><br><small class="text-muted">ISBN: {{ $book['isbn'] }}</small></td>
-                    <td>{{ $book['author']['name'] ?? 'Unknown' }}</td>
-                    <td>{{ $book['category']['name'] ?? 'Unknown' }}</td>
-                    <td>₱{{ number_format($book['price'], 2) }}</td>
+                    <td><strong>{{ $bookTitle }}</strong><br><small class="text-muted">ISBN: {{ $bookIsbn }}</small></td>
+                    <td>{{ data_get($book, 'author.name', 'Unknown') }}</td>
+                    <td>{{ data_get($book, 'category.name', 'Unknown') }}</td>
+                    <td>₱{{ number_format((float) $bookPrice, 2) }}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-edit" onclick="openEditModal({{ json_encode($book) }})"><i class="fas fa-edit"></i></button>
-                            <form action="/admin/books/{{ $book['id'] }}" method="POST" id="delete-form-{{ $book['id'] }}">
+                            <button class="btn-edit" onclick='openEditModal(@json($book))'><i class="fas fa-edit"></i></button>
+                            @if($bookId)
+                            <form action="/admin/books/{{ $bookId }}" method="POST" id="delete-form-{{ $bookId }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" class="btn-delete" onclick="window.showConfirm('Delete Book', 'Are you sure you want to delete this book?', () => document.getElementById('delete-form-{{ $book['id'] }}').submit())"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="btn-delete" onclick="window.showConfirm('Delete Book', 'Are you sure you want to delete this book?', () => document.getElementById('delete-form-{{ $bookId }}').submit())"><i class="fas fa-trash"></i></button>
                             </form>
+                            @endif
                         </div>
                     </td>
                 </tr>
@@ -174,16 +189,16 @@
                 <div style="flex:1;">
                     <label style="display:block; margin-bottom:5px;">Author</label>
                     <select name="author_id" id="bookAuthor" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                        @foreach($authors['data'] ?? $authors as $author)
-                            <option value="{{ $author['id'] }}">{{ $author['name'] }}</option>
+                        @foreach($authorItems as $author)
+                            <option value="{{ data_get($author, 'id') }}">{{ data_get($author, 'name', 'Unknown') }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div style="flex:1;">
                     <label style="display:block; margin-bottom:5px;">Category</label>
                     <select name="category_id" id="bookCategory" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                        @foreach($categories['data'] ?? $categories as $category)
-                            <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
+                        @foreach($categoryItems as $category)
+                            <option value="{{ data_get($category, 'id') }}">{{ data_get($category, 'name', 'Unknown') }}</option>
                         @endforeach
                     </select>
                 </div>

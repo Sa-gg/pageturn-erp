@@ -55,18 +55,22 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($purchaseOrders['data'] ?? $purchaseOrders as $po)
+                @php
+                    $poItems = $purchaseOrders['data'] ?? $purchaseOrders;
+                @endphp
+                @forelse($poItems as $po)
+                @if(is_array($po))
                 <tr>
-                    <td><strong>{{ $po['po_number'] ?? 'PO-'.str_pad($po['id'], 5, '0', STR_PAD_LEFT) }}</strong></td>
+                    <td><strong>{{ $po['po_number'] ?? 'PO-'.str_pad(($po['id'] ?? 0), 5, '0', STR_PAD_LEFT) }}</strong></td>
                     <td>{{ $po['supplier']['name'] ?? 'Unknown' }}</td>
-                    <td>{{ \Carbon\Carbon::parse($po['created_at'])->format('M d, Y') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($po['expected_date'])->format('M d, Y') }}</td>
+                    <td>{{ isset($po['created_at']) ? \Carbon\Carbon::parse($po['created_at'])->format('M d, Y') : 'N/A' }}</td>
+                    <td>{{ isset($po['expected_date']) ? \Carbon\Carbon::parse($po['expected_date'])->format('M d, Y') : 'N/A' }}</td>
                     <td>₱{{ number_format($po['total_cost'] ?? 0, 2) }}</td>
                     <td>
-                        <span class="badge badge-{{ strtolower($po['status']) }}">{{ $po['status'] }}</span>
+                        <span class="badge badge-{{ strtolower($po['status'] ?? 'pending') }}">{{ $po['status'] ?? 'pending' }}</span>
                     </td>
                     <td>
-                        @if($po['status'] == 'pending')
+                        @if(in_array(($po['status'] ?? 'pending'), ['pending', 'submitted']) && isset($po['id']))
                         <form action="/admin/purchase-orders/{{ $po['id'] }}/receive" method="POST" id="receive-form-{{ $po['id'] }}">
                             @csrf
                             @method('PATCH')
@@ -77,6 +81,7 @@
                         @endif
                     </td>
                 </tr>
+                @endif
                 @empty
                 <tr>
                     <td colspan="7" style="text-align:center; padding:30px;">No purchase orders found.</td>
@@ -121,6 +126,7 @@
                                     <option value="{{ $book['id'] }}">{{ $book['title'] }}</option>
                                 @endforeach
                             </select>
+                            <input type="hidden" name="items[0][book_title]" value="">
                         </div>
                         <div style="flex:1;">
                             <input type="number" name="items[0][quantity]" placeholder="Qty" min="1" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
@@ -141,6 +147,18 @@
 </div>
 
 <script>
+function syncPoBookTitles() {
+    const rows = document.querySelectorAll('#poItemsContainer .po-item');
+    rows.forEach((row, index) => {
+        const select = row.querySelector('select[name="items[' + index + '][book_id]"]') || row.querySelector('select[name$="[book_id]"]');
+        const hidden = row.querySelector('input[name="items[' + index + '][book_title]"]') || row.querySelector('input[name$="[book_title]"]');
+        if (select && hidden) {
+            const selected = select.options[select.selectedIndex];
+            hidden.value = selected ? selected.text : '';
+        }
+    });
+}
+
 function openCreateModal() {
     document.getElementById('poModal').style.display = 'flex';
 }
@@ -148,5 +166,15 @@ function openCreateModal() {
 function closeModal() {
     document.getElementById('poModal').style.display = 'none';
 }
+
+document.addEventListener('change', function(event) {
+    if (event.target && event.target.name && event.target.name.indexOf('[book_id]') !== -1) {
+        syncPoBookTitles();
+    }
+});
+
+document.getElementById('poForm').addEventListener('submit', function() {
+    syncPoBookTitles();
+});
 </script>
 @endsection

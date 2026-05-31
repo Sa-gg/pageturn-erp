@@ -47,6 +47,8 @@ class CheckoutController extends Controller
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email',
             'shipping_address' => 'required|string',
+            'shipping_city' => 'required|string',
+            'shipping_zip' => 'required|string',
             'payment_method' => 'required|string|in:card,paypal,bank_transfer'
         ]);
 
@@ -61,9 +63,12 @@ class CheckoutController extends Controller
         }
 
         $payload = [
+            'user_id' => session('user.id') ?? 1,
             'customer_name' => $request->customer_name,
             'customer_email' => $request->customer_email,
             'shipping_address' => $request->shipping_address,
+            'shipping_city' => $request->shipping_city,
+            'shipping_zip' => $request->shipping_zip,
             'payment_method' => $request->payment_method,
             'items' => $items
         ];

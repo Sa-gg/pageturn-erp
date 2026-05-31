@@ -37,6 +37,16 @@
                             <label for="shipping_address" class="block text-sm font-medium text-gray-700 mb-1">Full Shipping Address</label>
                             <textarea id="shipping_address" name="shipping_address" rows="3" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-forest focus:ring focus:ring-brand-forest focus:ring-opacity-50"></textarea>
                         </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label for="shipping_city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input type="text" id="shipping_city" name="shipping_city" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-forest focus:ring focus:ring-brand-forest focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label for="shipping_zip" class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                                <input type="text" id="shipping_zip" name="shipping_zip" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-forest focus:ring focus:ring-brand-forest focus:ring-opacity-50">
+                            </div>
+                        </div>
                     </div>
                 </div>
 

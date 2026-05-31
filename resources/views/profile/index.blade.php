@@ -32,7 +32,7 @@
                         <li class="flex justify-between"><span>Total Orders:</span> <span class="font-medium text-gray-900">{{ count($orders['data'] ?? []) }}</span></li>
                     </ul>
                     
-                    @if(($user['role'] ?? '') === 'admin')
+                    @if(in_array(($user['role'] ?? ''), ['admin', 'super_admin', 'catalog_admin', 'orders_admin', 'inventory_admin', 'finance_admin', 'staff']))
                     <div class="mt-6 pt-6 border-t border-gray-100">
                         <a href="/admin/dashboard" class="w-full btn-secondary text-center block">Go to Admin Dashboard</a>
                     </div>

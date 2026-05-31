@@ -2,11 +2,24 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
 class AuthService
 {
-    protected $baseUrl;
+    protected string $baseUrl;
+
+    protected function token(): ?string
+    {
+        $token = session('user.api_token') ?? session('token') ?? session('api_token');
+        return is_string($token) ? $token : null;
+    }
+
+    protected function client(): PendingRequest
+    {
+        $token = $this->token();
+        return $token ? Http::withToken($token) : Http::acceptJson();
+    }
 
     public function __construct()
     {
@@ -28,25 +41,21 @@ class AuthService
 
     public function getUsers($params = [])
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/users", $params);
+        return $this->client()->get("{$this->baseUrl}/users", $params);
     }
 
     public function createUser($data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->post("{$this->baseUrl}/users", $data);
+        return $this->client()->post("{$this->baseUrl}/users", $data);
     }
 
     public function updateUser($id, $data)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->put("{$this->baseUrl}/users/{$id}", $data);
+        return $this->client()->put("{$this->baseUrl}/users/{$id}", $data);
     }
 
     public function deleteUser($id)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->delete("{$this->baseUrl}/users/{$id}");
+        return $this->client()->delete("{$this->baseUrl}/users/{$id}");
     }
 }

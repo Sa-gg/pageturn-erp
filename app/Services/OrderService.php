@@ -2,11 +2,24 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
 class OrderService
 {
-    protected $baseUrl;
+    protected string $baseUrl;
+
+    protected function token(): ?string
+    {
+        $token = session('user.api_token') ?? session('token') ?? session('api_token');
+        return is_string($token) ? $token : null;
+    }
+
+    protected function client(): PendingRequest
+    {
+        $token = $this->token();
+        return $token ? Http::withToken($token) : Http::acceptJson();
+    }
 
     public function __construct()
     {
@@ -20,20 +33,17 @@ class OrderService
     
     public function getOrders($params = [])
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/orders", $params);
+        return $this->client()->get("{$this->baseUrl}/orders", $params);
     }
 
     public function getSalesStats($params = [])
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->get("{$this->baseUrl}/dashboard/sales", $params);
+        return $this->client()->get("{$this->baseUrl}/dashboard/sales", $params);
     }
 
     public function updateOrderStatus($id, $status)
     {
-        $token = session('user.api_token');
-        return Http::withToken($token)->patch("{$this->baseUrl}/orders/{$id}/status", [
+        return $this->client()->patch("{$this->baseUrl}/orders/{$id}/status", [
             'status' => $status
         ]);
     }

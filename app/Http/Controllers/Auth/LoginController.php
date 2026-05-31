@@ -71,11 +71,12 @@ class LoginController extends Controller
 
         // Redirect based on role
         $user = $result['data']['user'];
-        if (in_array($user['role'], ['admin', 'staff'])) {
-            return redirect()->intended('/admin/dashboard');
-        }
+            $adminRoles = ['admin', 'super_admin', 'catalog_admin', 'orders_admin', 'inventory_admin', 'finance_admin', 'staff'];
+            if (in_array($user['role'], $adminRoles)) {
+                return redirect('/admin/dashboard');
+            }
 
-        return redirect()->intended('/home');
+            return redirect('/');
     }
 
     /**

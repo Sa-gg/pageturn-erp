@@ -51,11 +51,15 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($categories['data'] ?? $categories as $category)
+                @php
+                    $categoryItems = $categories['data'] ?? $categories;
+                @endphp
+                @forelse($categoryItems as $category)
+                @if(is_array($category) && isset($category['id']))
                 <tr>
                     <td>{{ $category['id'] }}</td>
-                    <td><strong>{{ $category['name'] }}</strong></td>
-                    <td>{{ \Illuminate\Support\Str::limit($category['description'], 100) }}</td>
+                    <td><strong>{{ $category['name'] ?? 'Unknown' }}</strong></td>
+                    <td>{{ \Illuminate\Support\Str::limit($category['description'] ?? '', 100) }}</td>
                     <td>
                         <div class="action-btns">
                             <button class="btn-edit" onclick="openEditModal({{ json_encode($category) }})"><i class="fas fa-edit"></i></button>
@@ -67,6 +71,7 @@
                         </div>
                     </td>
                 </tr>
+                @endif
                 @empty
                 <tr>
                     <td colspan="4" style="text-align:center; padding:30px;">No categories found.</td>

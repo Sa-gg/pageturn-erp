@@ -60,6 +60,7 @@ class PurchaseOrderController extends Controller
             'expected_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.book_id' => 'required|integer',
+            'items.*.book_title' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_cost' => 'required|numeric|min:0',
         ]);

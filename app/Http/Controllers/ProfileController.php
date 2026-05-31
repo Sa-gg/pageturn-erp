@@ -25,10 +25,14 @@ class ProfileController extends Controller
 
         $orders = [];
         try {
-            // In a real app we would pass the customer email or ID, but here we just fetch recent orders to simulate
-            $response = $this->orderService->getOrders(['limit' => 5]);
-            if ($response->successful()) {
-                $orders = $response->json();
+            if (isset($user['id'])) {
+                $response = $this->orderService->getOrders([
+                    'user_id' => $user['id'],
+                    'limit' => 10
+                ]);
+                if ($response->successful()) {
+                    $orders = $response->json();
+                }
             }
         } catch (\Exception $e) {
             Log::error('Failed to fetch orders for profile: ' . $e->getMessage());

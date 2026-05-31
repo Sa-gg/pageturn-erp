@@ -453,12 +453,7 @@
         <i class="fas fa-feather-alt hero-particle"></i>
 
         <nav class="hero-nav">
-            <a class="hero-brand" href="{{ url('/') }}">
-                <div class="hero-brand-icon">
-                    <i class="fas fa-book-open"></i>
-                </div>
-                Page<span>Turn</span>
-            </a>
+            @include('partials.brand-logo', ['href' => url('/'), 'subline' => 'Premium Bookstore', 'variant' => 'dark'])
 
             <div class="hero-nav-links">
                 @if(session('user'))
@@ -590,9 +585,7 @@
 
     <!-- ===== Footer ===== -->
     <footer class="landing-footer">
-        <div class="landing-footer-brand">
-            Page<span>Turn</span> Books
-        </div>
+        @include('partials.brand-logo', ['href' => url('/'), 'subline' => 'Curated Reads', 'class' => 'landing-footer-brand', 'variant' => 'dark'])
         <div class="landing-footer-copy">
             &copy; {{ date('Y') }} PageTurn Books. All rights reserved. Built with ❤️ using Laravel.
         </div>

@@ -78,6 +78,15 @@
         border: 1px solid #ccc;
         border-radius: 4px;
         background: white;
+        color: #333;
+    }
+    @media (prefers-color-scheme: dark) {
+        .status-select { background: #1e293b; color: #e2e8f0; border-color: rgba(255,255,255,0.15); }
+    }
+    :root.dark .status-select {
+        background: #1e293b;
+        color: #e2e8f0;
+        border-color: rgba(255,255,255,0.15);
     }
 </style>
 @endsection
