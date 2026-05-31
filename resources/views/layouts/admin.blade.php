@@ -263,6 +263,23 @@
             }
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wake up backend microservices in the background (Render Free Tier Helper)
+            const services = [
+                "{{ config('services.catalog.base_url') }}",
+                "{{ config('services.auth.base_url') }}",
+                "{{ config('services.inventory.base_url') }}",
+                "{{ config('services.orders.base_url') }}",
+                "{{ config('services.finance.base_url') }}"
+            ];
+            services.forEach(url => {
+                if (url && url.includes('onrender.com')) {
+                    const healthUrl = url.replace(/\/api\/?$/, '') + '/api/health';
+                    fetch(healthUrl, { mode: 'no-cors' }).catch(() => {});
+                }
+            });
+        });
+
         // Initialize Theme Toggle Icon
         function updateThemeToggleIcon() {
             const icon = document.getElementById('theme-toggle-icon');
