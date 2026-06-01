@@ -1,0 +1,4 @@
+[2026-05-29 15:02:01] production.ERROR: Type of Carbon\CarbonPeriod::EXCLUDE_START_DATE must be compatible with DatePeriod::EXCLUDE_START_DATE of type int {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Type of Carbon\\CarbonPeriod::EXCLUDE_START_DATE must be compatible with DatePeriod::EXCLUDE_START_DATE of type int at C:\\Users\\parus\\Desktop\\erp\\pageturn-auth\\vendor\\nesbot\\carbon\\src\\Carbon\\CarbonPeriod.php:183)
+[stacktrace]
+#0 {main}
+"} 

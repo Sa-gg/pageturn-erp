@@ -20,3 +20,17 @@ A demo repo for deploying a Laravel PHP application on [Render](https://render.c
    | `DB_CONNECTION`  | `pgsql` |
 
 That's it! Your Laravel 11 app will be live on your Render URL as soon as the build finishes. You can test it out by registering and logging in.
+
+## Test Accounts
+
+The following accounts have been pre-configured for testing purposes:
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| super_admin | admin@pageturn.com | password123 |
+| finance_admin | finance@pageturn.com | password123 |
+| inventory_admin | inventory@pageturn.com | password123 |
+| catalog_admin | catalog@pageturn.com | password123 |
+| orders_admin | orders@pageturn.com | password123 |
+| staff | staff@pageturn.com | password123 |
+| customer | customer@example.com | password123 |
